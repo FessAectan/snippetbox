@@ -31,6 +31,9 @@ func (app *application) routes() http.Handler {
 	// which will be used for every request our application receives.
 	standard := alice.New(app.recoverPanic, app.logRequest, commonHeaders)
 
+	// standard way
+	//return app.recoverPanic(app.logRequest(commonHeaders(mux)))
+
 	// Return the 'standard' middleware chain followed by the servemux.
 	return standard.Then(mux)
 }

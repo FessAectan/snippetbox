@@ -84,9 +84,11 @@ func main() {
 		ErrorLog:  slog.NewLogLogger(logger.Handler(), slog.LevelError),
 		TLSConfig: tlsConfig,
 		// Add Idle, Read and Write timeouts to the server.
-		IdleTimeout:  time.Minute,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		IdleTimeout: time.Minute,     // it's about keep-alive connections; we will close them in 1 min
+		ReadTimeout: 5 * time.Second, // helps us against slow clients and forcibly closes connection after 5 sec
+		// IdleTimeout = ReadTimeout if we not set IdleTimeout explicitly
+		WriteTimeout: 10 * time.Second, // close connection if handler writes to it more than 10 sec
+		// the idea: close connection when a handler writes to it too long
 	}
 
 	logger.Info("starting server", "addr", srv.Addr)
