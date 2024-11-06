@@ -1,19 +1,26 @@
 package main
 
 import (
-	"github.com/justinas/alice"
 	"net/http"
+
+	"snippetbox/ui" // New import
+
+	"github.com/justinas/alice"
 )
 
-// Update the signature for the routes() method so that it returns a
-// http.Handler instead of *http.ServeMux.
 func (app *application) routes() http.Handler {
 	mux := http.NewServeMux()
 
-	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	mux.Handle("GET /static/", http.StripPrefix("/static", fileServer))
+	// Use the http.FileServerFS() function to create a HTTP handler which
+	// serves the embedded files in ui.Files. It's important to note that our
+	// static files are contained in the "static" folder of the ui.Files
+	// embedded filesystem. So, for example, our CSS stylesheet is located at
+	// "static/css/main.css". This means that we no longer need to strip the
+	// prefix from the request URL -- any requests that start with /static/ can
+	// just be passed directly to the file server and the corresponding static
+	// file will be served (so long as it exists).
+	mux.Handle("GET /static/", http.FileServerFS(ui.Files))
 
-	// Unprotected application routes using the "dynamic" middleware chain.
 	dynamic := alice.New(app.sessionManager.LoadAndSave, noSurf, app.authenticate)
 
 	mux.Handle("GET /{$}", dynamic.ThenFunc(app.home))
@@ -23,8 +30,6 @@ func (app *application) routes() http.Handler {
 	mux.Handle("GET /user/login", dynamic.ThenFunc(app.userLogin))
 	mux.Handle("POST /user/login", dynamic.ThenFunc(app.userLoginPost))
 
-	// Protected (authenticated-only) application routes, using a new "protected"
-	// middleware chain which includes the requireAuthentication middleware.
 	protected := dynamic.Append(app.requireAuthentication)
 
 	mux.Handle("GET /snippet/create", protected.ThenFunc(app.snippetCreate))
@@ -32,10 +37,5 @@ func (app *application) routes() http.Handler {
 	mux.Handle("POST /user/logout", protected.ThenFunc(app.userLogoutPost))
 
 	standard := alice.New(app.recoverPanic, app.logRequest, commonHeaders)
-
-	// standard way
-	//return app.recoverPanic(app.logRequest(commonHeaders(mux)))
-
-	// Return the 'standard' middleware chain followed by the servemux.
 	return standard.Then(mux)
 }
