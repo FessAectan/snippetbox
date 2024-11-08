@@ -36,6 +36,10 @@ type userSignupForm struct {
 	validator.Validator `form:"-"`
 }
 
+func (app *application) about(w http.ResponseWriter, r *http.Request) {
+	app.render(w, r, http.StatusOK, "about.tmpl", app.newTemplateData(r))
+}
+
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	snippets, err := app.snippets.Latest()
 	if err != nil {
