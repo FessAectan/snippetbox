@@ -262,8 +262,13 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 	// Add the ID of the current user to the session, so that they are now
 	// 'logged in'.
 	app.sessionManager.Put(r.Context(), "authenticatedUserID", id)
+	redirectURL := app.sessionManager.GetString(r.Context(), "redirect2URLafterLogin")
+	if redirectURL != "" {
+		app.sessionManager.Remove(r.Context(), "redirect2URLafterLogin")
+		http.Redirect(w, r, redirectURL, http.StatusSeeOther)
 
-	// Redirect the user to the create snippet page.
+	}
+
 	http.Redirect(w, r, "/snippet/create", http.StatusSeeOther)
 }
 
