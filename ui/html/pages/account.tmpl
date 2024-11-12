@@ -1,0 +1,20 @@
+{{define "title"}}User #{{.User.Name}}{{end}}
+
+{{define "main"}}
+    {{with .User}}
+    <div class='user'>
+        <table>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Joined</th>
+          </tr>
+          <tr>
+            <td>{{.Name}}</td>
+            <td>{{.Email}}</td>
+            <td>{{.Created | humanDate}}</td>
+          </tr>
+        </table>
+    </div>
+    {{end}}
+{{end}}

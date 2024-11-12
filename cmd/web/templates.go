@@ -12,6 +12,7 @@ import (
 // Add a Form field with the type "any".
 type templateData struct {
 	CurrentYear     int
+	User            models.User
 	Snippet         models.Snippet
 	Snippets        []models.Snippet
 	Form            any

@@ -81,6 +81,25 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	app.render(w, r, http.StatusOK, "view.tmpl", data)
 }
 
+func (app *application) accountView(w http.ResponseWriter, r *http.Request) {
+	data := app.newTemplateData(r)
+	id := app.sessionManager.Get(r.Context(), "authenticatedUserID")
+	user, err := app.users.Get(id.(int))
+	data.User = user
+
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		} else {
+			app.serverError(w, r, err)
+		}
+	}
+
+	app.render(w, r, http.StatusOK, "account.tmpl", data)
+	//fmt.Fprintf(w, "%+v", user)
+	//w.Write([]byte(fmt.Sprintf("%v", user)))
+}
+
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
 
